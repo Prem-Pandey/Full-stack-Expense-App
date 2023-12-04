@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta Catagory="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Store moultiple user</title>
+</head>
+
+<body>
+    <form onsubmit="userDetails(event)">
+        <h1>Expense tracker</h1>
+        <input type="text" id="Catagory" placeholder="Catagory"><br><br>
+        <input type="number" id="Amount" placeholder="Amount"><br><br>
+        <input type="submit">
+    </form>
+    <ul id="listofitems"></ul>
+
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.4.0/axios.min.js"></script>
+    <script>
+        function userDetails(event){
+            event.preventDefault();
+            const Catagory = event.target.Catagory.value;
+            const Amount = event.target.Amount.value;
+
+            const obj = {
+                Catagory,
+                Amount,
+            };
+            axios.post("http://localhost:3000/user/add-user", obj)
+                .then((response) => {
+                    console.log(response);
+                    showUser(response.data.newUserDetail);
+
+                })
+                .catch((err) => {
+                    document.body.innerHTML = document.body.innerHTML + "<h4> Something went wrong </h4>"
+                    console.log(err);
+                })
+        }
+        window.addEventListener("DOMContentLoaded", () => {
+            axios.get("http://localhost:3000/user/get-users")
+                .then((response) => {
+                    console.log(response);
+
+                    for(var i = 0; i<response.data.allUsers.length; i++){
+                        showUser(response.data.allUsers[i]);
+                    }
+                })
+                .catch((error) => {
+                    console.log(error);
+                })
+        })
+
+        function showUser(user){
+            document.getElementById('Catagory').value = '';
+            document.getElementById('Amount').value = '';
+            // console.log('i am in showuser')
+
+
+            const parentNode = document.getElementById('listofitems');
+            const childHTML = `<li id = ${user.id}> ${user.Catagory} - ${user.Amount}
+                        <button onclick=deleteUser('${user.id}')> Delete </button>
+                    </li>`
+                    //<button onclick=editUser('${user.Catagory}', '${user.Amount}', '${user.id}')> Edit </button>
+                    
+                    // console.log(user.id, user.email, user.Catagory);
+            parentNode.innerHTML = parentNode.innerHTML + childHTML;
+        }
+
+        // function editUser(emailId, Catagory, Amount, userId){
+        //     axios.edit(`http://localhost:3000/user/edit-user/${userId}`)
+        //     .then((response)=> {
+        //         deleteUser(userId);
+        //     })
+        // }
+
+        function deleteUser(userId)
+        {
+            // userId = undefined;
+            axios.delete(`http://localhost:3000/user/delete-user/${userId}`)
+                .then((response) => {
+                // console.log("i am in delete user axios");
+
+                    removeUserFromScreen(userId);
+                })
+                .catch((err) => {
+                    console.log(err);
+                })
+        }
+
+        function removeUserFromScreen(userId){
+            const parentNode = document.getElementById('listofitems');
+            const childNodeToBeDeleted = document.getElementById(userId);
+            if(childNodeToBeDeleted){
+                parentNode.removeChild(childNodeToBeDeleted);
+            }
+        }
+        
+
+    </script>
+
+
+
+</body>
+
+
+
+
+
+</html>
